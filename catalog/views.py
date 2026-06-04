@@ -76,3 +76,30 @@ def logout_view(request):
     logout(request)
     return redirect('catalog:product_list')
 
+@login_required(login_url='/login/')
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    quantity = int(request.POST.get('quantity', 1))
+    
+    cart_item, created = CartItem.objects.get_or_create(
+        user=request.user,
+        product=product,
+        defaults={'quantity': quantity}
+    )
+    if not created:
+        cart_item.quantity += quantity
+        cart_item.save()
+        
+    return redirect('catalog:cart_view')
+
+@login_required(login_url='/login/')
+def cart_view(request):
+    items = CartItem.objects.filter(user=request.user)
+    total_sum = sum(item.get_total_price() for item in items)
+    return render(request, 'catalog/cart.html', {'items': items, 'total_sum': total_sum})
+
+@login_required
+def remove_from_cart(request, item_id):
+    item = get_object_or_404(CartItem, id=item_id, user=request.user)
+    item.delete()
+    return redirect('catalog:cart_view')
