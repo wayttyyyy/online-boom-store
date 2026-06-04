@@ -1,0 +1,108 @@
+{% extends "catalog/base.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5 pb-5">
+    <h2 class="fw-bolder mb-4">Кошик покупок</h2>
+    
+    {% if items %}
+    <div class="row">
+        
+        <div class="col-lg-8 mb-4 mb-lg-0">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="ps-4 py-3 border-0 rounded-top-start text-uppercase small text-muted fw-bold">Товар</th>
+                                    <th scope="col" class="text-center border-0 text-uppercase small text-muted fw-bold">Ціна</th>
+                                    <th scope="col" class="text-center border-0 text-uppercase small text-muted fw-bold">Кількість</th>
+                                    <th scope="col" class="text-center border-0 text-uppercase small text-muted fw-bold">Сума</th>
+                                    <th scope="col" class="text-end pe-4 border-0 rounded-top-end"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td class="ps-4 py-4">
+                                        <div class="d-flex align-items-center">
+                                            {% if item.product.image %}
+                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 65px; height: 65px; object-fit: contain;" class="me-3 bg-white border rounded p-1 shadow-sm">
+                                            {% else %}
+                                                <img src="https://via.placeholder.com/65" class="me-3 rounded shadow-sm">
+                                            {% endif %}
+                                            <a href="{% url 'catalog:product_detail' item.product.id %}" class="text-dark text-decoration-none fw-bolder fs-6">{{ item.product.name }}</a>
+                                        </div>
+                                    </td>
+                                    <td class="text-center text-muted">${{ item.product.price }}</td>
+                                    <td class="text-center fw-bold">{{ item.quantity }} шт.</td>
+                                    <td class="text-center fw-bolder fs-5 text-dark">${{ item.get_total_price }}</td>
+                                    <td class="text-end pe-4">
+                                        <a href="{% url 'catalog:remove_from_cart' item.id %}" class="btn btn-sm btn-outline-danger rounded-3" title="Видалити">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 ms-2">
+                <a href="{% url 'catalog:product_list' %}" class="text-decoration-none text-muted fw-bold hover-dark">
+                    <i class="bi bi-arrow-left me-1"></i> Продовжити покупки
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 bg-light">
+                <div class="card-body p-4">
+                    <h4 class="fw-bolder border-bottom pb-3 mb-4">Ваше замовлення</h4>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted fw-bold">Товари:</span>
+                        <span class="fw-bolder">${{ total_sum }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4 border-bottom pb-4">
+                        <span class="text-muted fw-bold">Доставка:</span>
+                        <span class="text-success fw-bolder">За тарифами</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-4 align-items-center">
+                        <span class="fs-5 fw-bolder">До сплати:</span>
+                        <span class="fs-3 fw-bolder text-dark">${{ total_sum }}</span>
+                    </div>
+                    
+                    <button class="btn btn-dark w-100 py-3 rounded-3 fw-bold text-uppercase shadow-sm" style="letter-spacing: 1px;">
+                        Оформити замовлення
+                    </button>
+                    
+                    <div class="text-center mt-3 small text-muted fw-bold">
+                        <i class="bi bi-shield-lock-fill me-1 text-success"></i> Гарантія безпечної оплати
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    {% else %}
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center py-5 mt-4 bg-light rounded-4 shadow-sm border-0">
+            <i class="bi bi-cart-x text-muted mb-3 d-block" style="font-size: 5rem;"></i>
+            <h3 class="fw-bolder mb-3">Ваш кошик наразі порожній</h3>
+            <p class="text-muted mb-4">Схоже, ви ще нічого не додали. Перегляньте наш каталог, там багато цікавого!</p>
+            <a href="{% url 'catalog:product_list' %}" class="btn btn-dark btn-lg rounded-3 px-5 fw-bold">Перейти до каталогу</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .hover-dark { transition: color 0.2s ease; }
+    .hover-dark:hover { color: #212529 !important; }
+</style>
+{% endblock %}
