@@ -1,0 +1,105 @@
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
+from .models import Category, Product, CartItem
+from django.shortcuts import redirect
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
+from .models import Category, Product
+
+def product_list(request, category_slug=None):
+    category = None
+    categories = Category.objects.all()
+    products = Product.objects.filter(available=True)
+    
+    # Пошук
+    query = request.GET.get('q')
+    if query:
+        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
+
+    # Категорії
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)
+        products = products.filter(category=category)
+        
+    # Фільтр цін
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    # Сортування
+    sort_by = request.GET.get('sort')
+    if sort_by == 'price_asc':
+        products = products.order_by('price')
+    elif sort_by == 'price_desc':
+        products = products.order_by('-price')
+
+    return render(request, 'catalog/list.html', {
+        'category': category,
+        'categories': categories,
+        'products': products,
+        'query': query,
+        'min_price': min_price,
+        'max_price': max_price,
+        'sort_by': sort_by,
+    })
+
+def product_detail(request, id):
+    product = get_object_or_404(Product, id=id, available=True)
+    return render(request, 'catalog/detail.html', {'product': product})
+def register_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('catalog:product_list')
+    else:
+        form = UserCreationForm()
+    return render(request, 'catalog/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('catalog:product_list')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'catalog/login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('catalog:product_list')
+
+@login_required(login_url='/login/')
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    quantity = int(request.POST.get('quantity', 1))
+    
+    cart_item, created = CartItem.objects.get_or_create(
+        user=request.user,
+        product=product,
+        defaults={'quantity': quantity}
+    )
+    if not created:
+        cart_item.quantity += quantity
+        cart_item.save()
+        
+    return redirect('catalog:cart_view')
+
+@login_required(login_url='/login/')
+def cart_view(request):
+    items = CartItem.objects.filter(user=request.user)
+    total_sum = sum(item.get_total_price() for item in items)
+    return render(request, 'catalog/cart.html', {'items': items, 'total_sum': total_sum})
+
+@login_required
+def remove_from_cart(request, item_id):
+    item = get_object_or_404(CartItem, id=item_id, user=request.user)
+    item.delete()
+    return redirect('catalog:cart_view')
