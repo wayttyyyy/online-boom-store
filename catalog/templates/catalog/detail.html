@@ -1,0 +1,83 @@
+{% extends "catalog/base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{% url 'catalog:product_list' %}" class="text-dark text-decoration-none">Головна</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'catalog:product_list_by_category' product.category.slug %}" class="text-dark text-decoration-none">{{ product.category.name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+</nav>
+
+<div class="row gx-4 gx-lg-5 align-items-start mb-5">
+    
+    <div class="col-md-6 mb-4 mb-md-0">
+        <div class="border rounded shadow-sm p-4 text-center bg-white">
+            {% if product.image %}
+                <img class="img-fluid" src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 400px; object-fit: contain;" />
+            {% else %}
+                <img class="img-fluid" src="https://via.placeholder.com/600x700?text=No+Image" alt="..." />
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="small mb-2 text-muted">Артикул: {{ product.id }}</div>
+        
+        <h1 class="display-6 fw-bolder mb-2">{{ product.name }}</h1>
+        
+        <div class="text-warning mb-3 fs-5">
+            {{ product.stars_html }} 
+            <span class="text-muted small ms-2 fs-6 text-decoration-underline" style="cursor: pointer;">(Відгуків: 12)</span>
+        </div>
+
+        <div class="fs-2 mb-4 fw-bold text-dark">
+            ${{ product.price }}
+        </div>
+        
+        <p class="lead mb-4">{{ product.description|default:"Опис для цього товару поки що відсутній." }}</p>
+        
+        <div class="mb-4">
+            {% if product.stock > 0 %}
+                <span class="badge bg-success bg-opacity-10 text-success border border-success p-2">
+                    <i class="bi bi-check-circle-fill me-1"></i> В наявності ({{ product.stock }} шт.)
+                </span>
+            {% else %}
+                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger p-2">
+                    <i class="bi bi-x-circle-fill me-1"></i> Немає в наявності
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="d-flex align-items-center mb-4 pb-4 border-bottom">
+            <form action="{% url 'catalog:add_to_cart' product.id %}" method="post" class="d-flex align-items-center mb-4 pb-4 border-bottom">
+                {% csrf_token %}
+                <span class="me-3 text-muted fw-bold">Кількість:</span>
+                <input class="form-control text-center me-3 shadow-sm" name="quantity" type="number" value="1" style="max-width: 5rem; border-radius: 0.5rem;" min="1" max="{{ product.stock }}" />
+                
+                <button class="btn btn-dark btn-lg flex-shrink-0 shadow-sm rounded-3 px-4" type="submit" {% if product.stock == 0 %}disabled{% endif %}>
+                    <i class="bi-cart-fill me-2"></i>До кошика
+                </button>
+            </form>
+        </div>
+
+        <div class="card border-0 bg-light rounded-3">
+            <div class="card-body small">
+                <div class="mb-3">
+                    <i class="bi bi-truck fs-5 me-2 align-middle text-dark"></i> 
+                    <strong>Доставка:</strong> Нова Пошта, Укрпошта (від 50 грн)
+                </div>
+                <div class="mb-3">
+                    <i class="bi bi-shield-check fs-5 me-2 align-middle text-dark"></i> 
+                    <strong>Гарантія:</strong> 12 місяців від виробника
+                </div>
+                <div class="mb-0">
+                    <i class="bi bi-arrow-return-left fs-5 me-2 align-middle text-dark"></i> 
+                    <strong>Повернення:</strong> 14 днів згідно з законом України
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
