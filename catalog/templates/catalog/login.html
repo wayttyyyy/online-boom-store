@@ -1,0 +1,81 @@
+{% extends "catalog/base.html" %}
+
+{% block content %}
+<style>
+    .auth-card {
+        border-radius: 1.25rem;
+    }
+    .input-custom {
+        background-color: #f8f9fa;
+        border: 2px solid transparent;
+        padding: 0.8rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    .input-custom:focus {
+        background-color: #ffffff;
+        border-color: #212529; 
+        box-shadow: 0 0 0 4px rgba(33, 37, 41, 0.1);
+    }
+</style>
+
+<div class="row justify-content-center mt-5 mb-5 pb-5">
+    <div class="col-md-7 col-lg-5">
+        <div class="card shadow-lg border-0 auth-card">
+            <div class="card-body p-5">
+                
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-dark text-white rounded-circle mb-3 shadow" style="width: 65px; height: 65px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-lightning-fill" viewBox="0 0 16 16">
+                            <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5z"/>
+                        </svg>
+                    </div>
+                    <h3 class="fw-bolder">З поверненням</h3>
+                    <p class="text-muted small">Увійдіть до свого акаунта BOOM</p>
+                </div>
+                
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark small text-uppercase" style="letter-spacing: 0.5px;">{{ field.label }}</label>
+                            
+                            {{ field }}
+                            
+                            {% for error in field.errors %}
+                                <div class="text-danger small mt-1 fw-bold"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger p-2 small fw-bold rounded-3">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-dark w-100 py-3 mt-3 fw-bold text-uppercase rounded-3" style="letter-spacing: 1px;">
+                        Увійти
+                    </button>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <span class="text-muted small">Ще не з нами?</span> 
+                    <a href="{% url 'catalog:register' %}" class="text-dark fw-bolder text-decoration-underline small">Створити акаунт</a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let inputs = document.querySelectorAll('.auth-form input');
+        inputs.forEach(input => {
+            input.classList.add('form-control', 'input-custom');
+        });
+    });
+</script>
+{% endblock %}
