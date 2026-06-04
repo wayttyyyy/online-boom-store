@@ -1,0 +1,124 @@
+{% extends "catalog/base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .hover-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+    }
+</style>
+<div class="row">
+    
+    <div class="col-lg-3 mb-5">
+        
+        <h4 class="fw-bolder mb-3">Категорії</h4>
+        <div class="list-group mb-5 shadow-sm">
+            <a href="{% url 'catalog:product_list' %}" 
+            class="list-group-item list-group-item-action {% if not category %}bg-dark text-white border-dark{% endif %}">
+                Усі товари
+            </a>
+            {% for c in categories %}
+                <a href="{% url 'catalog:product_list_by_category' c.slug %}" 
+                class="list-group-item list-group-item-action {% if category.slug == c.slug %}bg-dark text-white border-dark{% endif %}">
+                    {{ c.name }}
+                </a>
+            {% endfor %}
+        </div>
+
+        <h4 class="fw-bolder mb-3">Фільтр за ціною</h4>
+        <div class="card shadow-sm border-0 bg-light p-3">
+            <form method="get" action="{% if category %}{% url 'catalog:product_list_by_category' category.slug %}{% else %}{% url 'catalog:product_list' %}{% endif %}">
+                {% if query %}
+                    <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Від ($)</label>
+                    <input type="number" class="form-control" name="min_price" value="{{ min_price|default_if_none:'' }}" placeholder="0" min="0">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small text-muted">До ($)</label>
+                    <input type="number" class="form-control" name="max_price" value="{{ max_price|default_if_none:'' }}" placeholder="99999" min="0">
+                </div>
+                
+                <button type="submit" class="btn btn-outline-dark w-100 mb-2">Застосувати</button>
+                <a href="{% url 'catalog:product_list' %}" class="btn btn-outline-secondary w-100 btn-sm">Скинути фільтри</a>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-9">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb small mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'catalog:product_list' %}" class="text-dark text-decoration-none">Головна</a></li>
+                {% if category %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+                {% else %}
+                    <li class="breadcrumb-item active" aria-current="page">Усі товари</li>
+                {% endif %}
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+            <h2 class="fw-bolder mb-0">
+                {% if category %}{{ category.name }}{% else %}Усі товари{% endif %}
+            </h2>
+            
+            <div class="dropdown">
+                <button class="btn btn-outline-dark btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    Сортувати за
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                    <li><a class="dropdown-item {% if sort_by == 'price_asc' %}active bg-dark{% endif %}" href="?sort=price_asc{% if query %}&q={{ query }}{% endif %}">Спочатку дешеві</a></li>
+                    <li><a class="dropdown-item {% if sort_by == 'price_desc' %}active bg-dark{% endif %}" href="?sort=price_desc{% if query %}&q={{ query }}{% endif %}">Спочатку дорогі</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row gx-4 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-xl-3 justify-content-center">
+            {% for product in products %}
+                <div class="col mb-5">
+                    <div class="card h-100 shadow-sm hover-card">
+                        {% if product.stock < 5 and product.stock > 0 %}
+                            <div class="badge bg-danger text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Закінчується</div>
+                        {% elif product.stock >= 10 %}
+                            <div class="badge bg-success text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Хіт продажу</div>
+                        {% endif %}
+                        <a href="{% url 'catalog:product_detail' product.id %}">
+                            {% if product.image %}
+                                <img class="card-img-top" src="{{ product.image.url }}" alt="{{ product.name }}" style="height: 200px; object-fit: contain; padding: 10px;" />
+                            {% else %}
+                                <img class="card-img-top" src="https://via.placeholder.com/450x300?text=No+Image" alt="Немає фото" />
+                            {% endif %}
+                        </a>
+                        <div class="card-body p-4 text-center">
+                            <h5 class="fw-bolder">
+                                <a href="{% url 'catalog:product_detail' product.id %}" class="text-decoration-none text-dark">{{ product.name }}</a>
+                            </h5>
+                            
+                            <div class="d-flex justify-content-center small text-warning mb-2 fs-5">
+                                {{ product.stars_html }}
+                            </div>
+                            
+                            <span class="fs-5 fw-bold">${{ product.price }}</span>
+                        </div>
+                        <div class="card-footer p-4 pt-0 border-top-0 bg-transparent text-center">
+                            <a class="btn btn-outline-dark mt-auto" href="{% url 'catalog:product_detail' product.id %}">Детальніше</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center py-5">
+                    <h4 class="text-muted">За вашим запитом нічого не знайдено</h4>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
