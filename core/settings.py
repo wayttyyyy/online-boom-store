@@ -102,9 +102,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 JAZZMIN_SETTINGS = {
-    "site_title": "TechGear Admin",
-    "site_header": "TechGear Store",
-    "site_brand": "TechGear B2B",
+    "site_title": "Admin Panel",
+    "site_header": "Admin Panel",
+    "site_brand": "BOOM",
     "welcome_sign": "Вітаємо в панелі керування",
     "search_model": ["catalog.Product"],
     "show_ui_builder": False,
