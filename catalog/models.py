@@ -25,4 +25,10 @@ class Product(models.Model):
     def stars_html(self):
         safe_rating = min(max(self.rating, 0), 5)
         return '★' * safe_rating + '☆' * (5 - safe_rating)
-    
+class CartItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def get_total_price(self):
+        return self.product.price * self.quantity

@@ -50,3 +50,29 @@ def product_list(request, category_slug=None):
 def product_detail(request, id):
     product = get_object_or_404(Product, id=id, available=True)
     return render(request, 'catalog/detail.html', {'product': product})
+def register_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('catalog:product_list')
+    else:
+        form = UserCreationForm()
+    return render(request, 'catalog/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('catalog:product_list')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'catalog/login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('catalog:product_list')
+
